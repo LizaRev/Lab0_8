@@ -5,13 +5,11 @@ let buffers: Record<string, AudioBuffer | undefined> = {};
 export function createAudio() {
   audioContext = new AudioContext();
 
-  function setBuffers(
-    assets: Record<string, AudioBuffer | undefined>
-  ): void {
+  function setBuffers(assets: Record<string, AudioBuffer | undefined>): void {
     buffers = {
       shoot: assets.shoot,
       hit: assets.hit,
-      explosion: assets.explosion
+      explosion: assets.explosion,
     };
   }
 
@@ -26,51 +24,34 @@ export function createAudio() {
       return;
     }
 
-    if (audioContext.state === 'suspended') {
+    if (audioContext.state === "suspended") {
       return;
     }
 
     const source = audioContext.createBufferSource();
-
     source.buffer = buffer;
-
-    source.connect(
-      audioContext.destination
-    );
-
+    source.connect(audioContext.destination);
     source.start();
   }
 
   function unlock(): void {
-    if (
-      audioContext &&
-      audioContext.state === 'suspended'
-    ) {
+    if (audioContext && audioContext.state === "suspended") {
       void audioContext.resume();
     }
   }
 
   function attach(world: EventTarget): void {
-    world.addEventListener(
-      'fired',
-      () => {
-        play('shoot');
-      }
-    );
+    world.addEventListener("fired", () => {
+      play("shoot");
+    });
 
-    world.addEventListener(
-      'hit',
-      () => {
-        play('hit');
-      }
-    );
+    world.addEventListener("hit", () => {
+      play("hit");
+    });
 
-    world.addEventListener(
-      'exploded',
-      () => {
-        play('explosion');
-      }
-    );
+    world.addEventListener("exploded", () => {
+      play("explosion");
+    });
   }
 
   return {
@@ -78,6 +59,7 @@ export function createAudio() {
     setBuffers,
     play,
     unlock,
-    attach
+    attach,
   };
 }
+

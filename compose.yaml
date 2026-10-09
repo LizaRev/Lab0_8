@@ -1,0 +1,31 @@
+services:
+  dogfight:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dogfight:local
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      LOG_DIR: /app/server/logs
+      ALLOWED_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+      GIT_SHA: "${APP_VERSION:-dev}"
+    volumes:
+      - dogfight-logs:/app/server/logs
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  dogfight-logs:

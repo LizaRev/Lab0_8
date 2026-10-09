@@ -1,13 +1,12 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from "vitest";
+import { createLoop } from "./loop.js";
 
-import { createLoop } from './loop.js';
-
-describe('createLoop', () => {
-  test('runs simulation with fixed steps', () => {
+describe("createLoop", () => {
+  test("runs simulation with fixed steps", () => {
     const callback: {
       current: ((time: number) => void) | null;
     } = {
-      current: null,
+      current: null
     };
 
     const requestAnimationFrameMock = vi.fn(
@@ -19,15 +18,8 @@ describe('createLoop', () => {
 
     const cancelAnimationFrameMock = vi.fn();
 
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      requestAnimationFrameMock
-    );
-
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      cancelAnimationFrameMock
-    );
+    vi.stubGlobal("requestAnimationFrame", requestAnimationFrameMock);
+    vi.stubGlobal("cancelAnimationFrame", cancelAnimationFrameMock);
 
     try {
       let simulateCalls = 0;
@@ -42,14 +34,12 @@ describe('createLoop', () => {
         },
         render: () => {
           renderCalls++;
-        },
+        }
       });
 
       loop.start();
 
-      expect(
-        requestAnimationFrameMock
-      ).toHaveBeenCalledTimes(1);
+      expect(requestAnimationFrameMock).toHaveBeenCalledTimes(1);
 
       callback.current?.(0);
       callback.current?.(100);
@@ -62,11 +52,11 @@ describe('createLoop', () => {
     }
   });
 
-  test('does not start twice', () => {
+  test("does not start twice", () => {
     const callback: {
       current: ((time: number) => void) | null;
     } = {
-      current: null,
+      current: null
     };
 
     const requestAnimationFrameMock = vi.fn(
@@ -76,23 +66,18 @@ describe('createLoop', () => {
       }
     );
 
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      requestAnimationFrameMock
-    );
+    vi.stubGlobal("requestAnimationFrame", requestAnimationFrameMock);
 
     try {
       const loop = createLoop({
         simulate: () => {},
-        render: () => {},
+        render: () => {}
       });
 
       loop.start();
       loop.start();
 
-      expect(
-        requestAnimationFrameMock
-      ).toHaveBeenCalledTimes(1);
+      expect(requestAnimationFrameMock).toHaveBeenCalledTimes(1);
 
       callback.current?.(0);
     } finally {
@@ -100,11 +85,11 @@ describe('createLoop', () => {
     }
   });
 
-  test('stops rendering after stop', () => {
+  test("stops rendering after stop", () => {
     const callback: {
       current: ((time: number) => void) | null;
     } = {
-      current: null,
+      current: null
     };
 
     const requestAnimationFrameMock = vi.fn(
@@ -116,15 +101,8 @@ describe('createLoop', () => {
 
     const cancelAnimationFrameMock = vi.fn();
 
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      requestAnimationFrameMock
-    );
-
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      cancelAnimationFrameMock
-    );
+    vi.stubGlobal("requestAnimationFrame", requestAnimationFrameMock);
+    vi.stubGlobal("cancelAnimationFrame", cancelAnimationFrameMock);
 
     try {
       let renderCalls = 0;
@@ -133,20 +111,17 @@ describe('createLoop', () => {
         simulate: () => {},
         render: () => {
           renderCalls++;
-        },
+        }
       });
 
       loop.start();
-
       callback.current?.(0);
 
       expect(renderCalls).toBe(1);
 
       loop.stop();
 
-      expect(
-        cancelAnimationFrameMock
-      ).toHaveBeenCalledTimes(1);
+      expect(cancelAnimationFrameMock).toHaveBeenCalledTimes(1);
 
       callback.current?.(100);
 
@@ -156,11 +131,11 @@ describe('createLoop', () => {
     }
   });
 
-  test('limits a long frame to 0.25 seconds', () => {
+  test("limits a long frame to 0.25 seconds", () => {
     const callback: {
       current: ((time: number) => void) | null;
     } = {
-      current: null,
+      current: null
     };
 
     const requestAnimationFrameMock = vi.fn(
@@ -170,10 +145,7 @@ describe('createLoop', () => {
       }
     );
 
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      requestAnimationFrameMock
-    );
+    vi.stubGlobal("requestAnimationFrame", requestAnimationFrameMock);
 
     try {
       let simulateCalls = 0;
@@ -183,7 +155,7 @@ describe('createLoop', () => {
         simulate: () => {
           simulateCalls++;
         },
-        render: () => {},
+        render: () => {}
       });
 
       loop.start();
@@ -197,3 +169,4 @@ describe('createLoop', () => {
     }
   });
 });
+

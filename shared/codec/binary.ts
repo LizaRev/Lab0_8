@@ -6,10 +6,7 @@ import {
   decodeSnapshot,
 } from "../protocol/binary.js";
 
-export const binaryCodec: Codec<
-  ArrayBuffer,
-  SnapshotMessageWithWorld
-> = {
+export const binaryCodec: Codec<ArrayBuffer, SnapshotMessageWithWorld> = {
   encode(message: SnapshotMessageWithWorld): ArrayBuffer {
     return encodeSnapshot(message);
   },
@@ -18,3 +15,4 @@ export const binaryCodec: Codec<
     return decodeSnapshot(data);
   },
 };
+

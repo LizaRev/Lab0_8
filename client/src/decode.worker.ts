@@ -15,31 +15,23 @@ type DecodeResponse =
       error: string;
     };
 
-self.addEventListener(
-  "message",
-  (event: MessageEvent<DecodeRequest>) => {
-    try {
-      const message =
-        decodeBinaryMessage(event.data.buffer);
+self.addEventListener("message", (event: MessageEvent<DecodeRequest>) => {
+  try {
+    const message = decodeBinaryMessage(event.data.buffer);
+    const response: DecodeResponse = {
+      ok: true,
+      message
+    };
 
-      const response: DecodeResponse = {
-        ok: true,
-        message
-      };
+    self.postMessage(response);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    const response: DecodeResponse = {
+      ok: false,
+      error: message
+    };
 
-      self.postMessage(response);
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : String(error);
-
-      const response: DecodeResponse = {
-        ok: false,
-        error: message
-      };
-
-      self.postMessage(response);
-    }
+    self.postMessage(response);
   }
-);
+});
+

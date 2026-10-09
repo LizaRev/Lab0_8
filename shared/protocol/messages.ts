@@ -76,6 +76,9 @@ const chatSchema = z.object({
       "Invalid chat text"
     )
     .max(MAX_CHAT_LENGTH),
+  roomId: z.string().optional(),
+  playerId: z.string().optional(),
+  name: z.string().optional(),
 });
 
 const pingSchema = z.object({
@@ -290,3 +293,4 @@ export function parseMessage(
     message: result.data,
   };
 }
+

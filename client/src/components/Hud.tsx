@@ -12,41 +12,23 @@ type HudProps = {
 };
 
 export type HudApi = {
-  update(
-    ship: Ship | null,
-    stats: HudStats
-  ): void;
-};
-
-type RosterMessage = {
-  players?: Player[];
+  update(ship: Ship | null, stats: HudStats): void;
 };
 
 type ChatMessage = {
   name?: string;
+  playerId?: string;
   text?: string;
-};
-
-type ScoreChangedDetail = {
-  score?: number;
 };
 
 function isObject(
   value: unknown
 ): value is Record<string, unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null
-  );
+  return typeof value === "object" && value !== null;
 }
 
-function getPlayers(
-  value: unknown
-): Player[] {
-  if (
-    !isObject(value) ||
-    !Array.isArray(value.players)
-  ) {
+function getPlayers(value: unknown): Player[] {
+  if (!isObject(value) || !Array.isArray(value.players)) {
     return [];
   }
 
@@ -63,18 +45,30 @@ function getPlayers(
   );
 }
 
-function getChatMessage(
-  value: unknown
-): ChatMessage | null {
+function getChatMessage(value: unknown): ChatMessage | null {
   if (!isObject(value)) {
     return null;
   }
+
+  const player = isObject(value.player)
+    ? value.player
+    : null;
 
   return {
     name:
       typeof value.name === "string"
         ? value.name
-        : undefined,
+        : player && typeof player.name === "string"
+          ? player.name
+          : undefined,
+
+    playerId:
+      typeof value.playerId === "string"
+        ? value.playerId
+        : player && typeof player.id === "string"
+          ? player.id
+          : undefined,
+
     text:
       typeof value.text === "string"
         ? value.text
@@ -82,9 +76,7 @@ function getChatMessage(
   };
 }
 
-function getScore(
-  value: unknown
-): number | null {
+function getScore(value: unknown): number | null {
   if (
     !isObject(value) ||
     typeof value.score !== "number"
@@ -101,181 +93,121 @@ export function HudComponent({
   initialPlayers,
   onReady,
 }: HudProps) {
-  const [score, setScore] =
-    useState(0);
+  const [score, setScore] = useState(0);
+  const [hp, setHp] = useState(3);
+  const [stepsPerSecond, setStepsPerSecond] = useState(0);
+  const [framesPerSecond, setFramesPerSecond] = useState(0);
+  const [frameTime, setFrameTime] = useState(0);
+  const [players, setPlayers] = useState<Player[]>(initialPlayers);
 
-  const [hp, setHp] =
-    useState(3);
+  const [messages, setMessages] = useState<
+    Array<{
+      name: string;
+      text: string;
+    }>
+  >([]);
 
-  const [stepsPerSecond, setStepsPerSecond] =
-    useState(0);
-
-  const [framesPerSecond, setFramesPerSecond] =
-    useState(0);
-
-  const [frameTime, setFrameTime] =
-    useState(0);
-
-  const [players, setPlayers] =
-    useState<Player[]>(initialPlayers);
-
-  const [messages, setMessages] =
-    useState<
-      Array<{
-        name: string;
-        text: string;
-      }>
-    >([]);
-
-  const [chatText, setChatText] =
-    useState("");
+  const [chatText, setChatText] = useState("");
 
   useEffect(() => {
-    function handleRoster(
-      event: Event
-    ): void {
-      if (
-        !(event instanceof CustomEvent)
-      ) {
+    function handleRoster(event: Event): void {
+      if (!(event instanceof CustomEvent)) {
         return;
       }
 
-      setPlayers(
-        getPlayers(event.detail)
-      );
+      setPlayers(getPlayers(event.detail));
     }
 
-    function handleChat(
-      event: Event
-    ): void {
-      if (
-        !(event instanceof CustomEvent)
-      ) {
+    function handleChat(event: Event): void {
+      if (!(event instanceof CustomEvent)) {
         return;
       }
 
-      const message =
-        getChatMessage(
-          event.detail
-        );
+      const message = getChatMessage(event.detail);
+      console.log("CHAT DEBUG:", event.detail, message);
 
       if (!message) {
         return;
       }
 
-      setMessages(
-        (current) => [
+      setMessages((current) => {
+        const matchingPlayer = players.find((player) => {
+          if (typeof player === "string") {
+            return false;
+          }
+
+          return (
+            message.playerId !== undefined &&
+            player.id === message.playerId
+          );
+        });
+
+        const rosterName =
+          matchingPlayer && typeof matchingPlayer !== "string"
+            ? matchingPlayer.name
+            : undefined;
+
+        const name =
+          message.name?.trim() ||
+          rosterName?.trim() ||
+          "";
+
+        return [
           ...current,
           {
-            name:
-              message.name ??
-              "Guest",
-            text:
-              message.text ??
-              "",
+            name,
+            text: message.text ?? "",
           },
-        ]
-      );
+        ];
+      });
     }
 
-    function handleScoreChanged(
-      event: Event
-    ): void {
-      if (
-        !(event instanceof CustomEvent)
-      ) {
+    function handleScoreChanged(event: Event): void {
+      if (!(event instanceof CustomEvent)) {
         return;
       }
 
-      const nextScore =
-        getScore(event.detail);
+      const nextScore = getScore(event.detail);
 
-      if (
-        nextScore !== null
-      ) {
+      if (nextScore !== null) {
         setScore(nextScore);
       }
     }
 
-    lobby?.addEventListener(
-      "roster",
-      handleRoster
-    );
-
-    lobby?.addEventListener(
-      "chat",
-      handleChat
-    );
-
-    world.addEventListener(
-      "scoreChanged",
-      handleScoreChanged
-    );
+    lobby?.addEventListener("roster", handleRoster);
+    lobby?.addEventListener("chat", handleChat);
+    world.addEventListener("scoreChanged", handleScoreChanged);
 
     return () => {
-      lobby?.removeEventListener(
-        "roster",
-        handleRoster
-      );
-
-      lobby?.removeEventListener(
-        "chat",
-        handleChat
-      );
-
-      world.removeEventListener(
-        "scoreChanged",
-        handleScoreChanged
-      );
+      lobby?.removeEventListener("roster", handleRoster);
+      lobby?.removeEventListener("chat", handleChat);
+      world.removeEventListener("scoreChanged", handleScoreChanged);
     };
-  }, [
-    lobby,
-    world,
-  ]);
+  }, [lobby, world, players]);
 
   useEffect(() => {
     onReady({
-      update(
-        ship: Ship | null,
-        stats: HudStats
-      ): void {
-        setHp(
-          ship?.hp ?? 0
-        );
-
-        setStepsPerSecond(
-          stats.stepsPerSecond
-        );
-
-        setFramesPerSecond(
-          stats.framesPerSecond
-        );
-
-        setFrameTime(
-          stats.lastFrameDuration
-        );
+      update(ship: Ship | null, stats: HudStats): void {
+        setHp(ship?.hp ?? 0);
+        setStepsPerSecond(stats.stepsPerSecond);
+        setFramesPerSecond(stats.framesPerSecond);
+        setFrameTime(stats.lastFrameDuration);
       },
     });
-  }, [
-    onReady,
-  ]);
+  }, [onReady]);
 
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ): void {
     event.preventDefault();
 
-    const text =
-      chatText.trim();
+    const text = chatText.trim();
 
     if (!text) {
       return;
     }
 
-    lobby?.sendChat?.(
-      text
-    );
-
+    lobby?.sendChat?.(text);
     setChatText("");
   }
 
@@ -288,15 +220,11 @@ export function HudComponent({
           left: "15px",
           width: "160px",
           padding: "10px 12px",
-          background:
-            "rgba(10, 8, 30, 0.72)",
-          border:
-            "1px solid rgba(180, 150, 255, 0.35)",
+          background: "rgba(10, 8, 30, 0.72)",
+          border: "1px solid rgba(180, 150, 255, 0.35)",
           borderRadius: "10px",
-          backdropFilter:
-            "blur(6px)",
-          WebkitBackdropFilter:
-            "blur(6px)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
           color: "white",
           font: "13px Arial, sans-serif",
           lineHeight: "1.6",
@@ -304,25 +232,11 @@ export function HudComponent({
           boxSizing: "border-box",
         }}
       >
-        <div>
-          Score: {score}
-        </div>
-
-        <div>
-          HP: {hp}
-        </div>
-
-        <div>
-          Steps/s: {stepsPerSecond}
-        </div>
-
-        <div>
-          FPS: {framesPerSecond}
-        </div>
-
-        <div>
-          Frame Time: {frameTime.toFixed(2)} ms
-        </div>
+        <div>Score: {score}</div>
+        <div>HP: {hp}</div>
+        <div>Steps/s: {stepsPerSecond}</div>
+        <div>FPS: {framesPerSecond}</div>
+        <div>Frame Time: {frameTime.toFixed(2)} ms</div>
       </div>
 
       <div
@@ -332,24 +246,18 @@ export function HudComponent({
           right: "15px",
           width: "240px",
           height: "430px",
-          maxHeight:
-            "calc(100vh - 30px)",
+          maxHeight: "calc(100vh - 30px)",
           boxSizing: "border-box",
           display: "flex",
           flexDirection: "column",
           padding: "12px",
-          background:
-            "rgba(10, 8, 30, 0.58)",
-          border:
-            "1px solid rgba(180, 150, 255, 0.35)",
+          background: "rgba(10, 8, 30, 0.58)",
+          border: "1px solid rgba(180, 150, 255, 0.35)",
           borderRadius: "12px",
-          backdropFilter:
-            "blur(5px)",
-          WebkitBackdropFilter:
-            "blur(5px)",
+          backdropFilter: "blur(5px)",
+          WebkitBackdropFilter: "blur(5px)",
           color: "white",
-          fontFamily:
-            "Arial, sans-serif",
+          fontFamily: "Arial, sans-serif",
           zIndex: 9999,
         }}
       >
@@ -376,67 +284,52 @@ export function HudComponent({
           }}
         >
           {players.length === 0 ? (
-            <div
-              style={{
-                color: "#91879e",
-                fontSize: "12px",
-              }}
-            >
+            <div style={{ color: "#91879e", fontSize: "12px" }}>
               No players
             </div>
           ) : (
-            players.map(
-              (player, index) => {
-                const playerName =
-                  typeof player === "string"
-                    ? player
-                    : player.name ??
-                      "Guest";
+            players.map((player, index) => {
+              const playerName =
+                typeof player === "string"
+                  ? player
+                  : player.name || "";
 
-                return (
-                  <div
-                    key={`${playerName}-${index}`}
+              return (
+                <div
+                  key={`${playerName}-${index}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "7px",
+                    padding: "6px 7px",
+                    background: "rgba(255, 255, 255, 0.06)",
+                    borderRadius: "7px",
+                  }}
+                >
+                  <span
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "7px",
-                      padding: "6px 7px",
-                      background:
-                        "rgba(255, 255, 255, 0.06)",
-                      borderRadius: "7px",
+                      width: "7px",
+                      height: "7px",
+                      minWidth: "7px",
+                      borderRadius: "50%",
+                      background: "#9dffb0",
+                      display: "inline-block",
                     }}
-                  >
-                    <span
-                      style={{
-                        width: "7px",
-                        height: "7px",
-                        minWidth: "7px",
-                        borderRadius: "50%",
-                        background: "#9dffb0",
-                        display:
-                          "inline-block",
-                      }}
-                    />
+                  />
 
-                    <span
-                      style={{
-                        fontSize: "12px",
-                      }}
-                    >
-                      {playerName}
-                    </span>
-                  </div>
-                );
-              }
-            )
+                  <span style={{ fontSize: "12px" }}>
+                    {playerName}
+                  </span>
+                </div>
+              );
+            })
           )}
         </div>
 
         <div
           style={{
             height: "1px",
-            background:
-              "rgba(255, 255, 255, 0.12)",
+            background: "rgba(255, 255, 255, 0.12)",
             margin: "10px 0",
           }}
         />
@@ -464,19 +357,18 @@ export function HudComponent({
             paddingRight: "2px",
           }}
         >
-          {messages.map(
-            (message, index) => (
-              <div
-                key={`${index}-${message.name}-${message.text}`}
-                style={{
-                  padding: "6px 7px",
-                  background:
-                    "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "7px",
-                  fontSize: "12px",
-                  lineHeight: "1.35",
-                }}
-              >
+          {messages.map((message, index) => (
+            <div
+              key={`${index}-${message.name}-${message.text}`}
+              style={{
+                padding: "6px 7px",
+                background: "rgba(255, 255, 255, 0.05)",
+                borderRadius: "7px",
+                fontSize: "12px",
+                lineHeight: "1.35",
+              }}
+            >
+              {message.name && (
                 <span
                   style={{
                     fontWeight: 700,
@@ -485,13 +377,11 @@ export function HudComponent({
                 >
                   {message.name}:{" "}
                 </span>
+              )}
 
-                <span>
-                  {message.text}
-                </span>
-              </div>
-            )
-          )}
+              <span>{message.text}</span>
+            </div>
+          ))}
         </div>
 
         <form
@@ -508,22 +398,15 @@ export function HudComponent({
             maxLength={500}
             autoComplete="off"
             value={chatText}
-            onChange={(event) =>
-              setChatText(
-                event.target.value
-              )
-            }
+            onChange={(event) => setChatText(event.target.value)}
             style={{
               flex: 1,
               minWidth: 0,
-              boxSizing:
-                "border-box",
+              boxSizing: "border-box",
               padding: "7px 8px",
-              border:
-                "1px solid rgba(180, 150, 255, 0.30)",
+              border: "1px solid rgba(180, 150, 255, 0.30)",
               borderRadius: "7px",
-              background:
-                "rgba(255, 255, 255, 0.10)",
+              background: "rgba(255, 255, 255, 0.10)",
               color: "white",
               outline: "none",
               fontSize: "12px",

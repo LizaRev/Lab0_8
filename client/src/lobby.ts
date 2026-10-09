@@ -10,44 +10,26 @@ type Room = {
   [key: string]: unknown;
 };
 
-function isRoom(
-  value: unknown
-): value is Room {
-  if (
-    typeof value !== "object" ||
-    value === null
-  ) {
+function isRoom(value: unknown): value is Room {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
-  if (
-    !("id" in value) ||
-    typeof value.id !== "string"
-  ) {
+  if (!("id" in value) || typeof value.id !== "string") {
     return false;
   }
 
   return true;
 }
 
-function getRooms(
-  data: unknown
-): Room[] {
+function getRooms(data: unknown): Room[] {
   if (Array.isArray(data)) {
     return data.filter(isRoom);
   }
 
-  if (
-    typeof data === "object" &&
-    data !== null &&
-    "rooms" in data
-  ) {
-    const rooms =
-      data.rooms;
-
-    return Array.isArray(rooms)
-      ? rooms.filter(isRoom)
-      : [];
+  if (typeof data === "object" && data !== null && "rooms" in data) {
+    const rooms = data.rooms;
+    return Array.isArray(rooms) ? rooms.filter(isRoom) : [];
   }
 
   return [];
@@ -56,12 +38,9 @@ function getRooms(
 export class Lobby extends EventTarget {
   rooms: Room[];
   playerName: string;
-
   controller: AbortController | null;
   refreshTimer: ReturnType<typeof setInterval> | null;
-
   connection: Connection;
-
   currentRoomId: string | null;
   currentRoom: Room | null;
 
@@ -70,17 +49,16 @@ export class Lobby extends EventTarget {
 
     this.rooms = [];
     this.playerName = "";
-
     this.controller = null;
     this.refreshTimer = null;
+    this.currentRoomId = null;
+    this.currentRoom = null;
 
     this.connection = new Connection({
       url: "/ws",
 
       onopen: () => {
-        this.dispatchEvent(
-          new CustomEvent("connectionOpen")
-        );
+        this.dispatchEvent(new CustomEvent("connectionOpen"));
 
         if (this.currentRoomId) {
           this.sendJoin();
@@ -88,38 +66,37 @@ export class Lobby extends EventTarget {
       },
 
       onmessage: (message) => {
-        this.handleMessage(
-          message
-        );
+        this.handleMessage(message);
       },
 
-      onclose: () => {
+      onclose: (event) => {
         this.dispatchEvent(
-          new CustomEvent("connectionClose")
+          new CustomEvent("connectionClose", {
+            detail: {
+              event,
+              message: "З'єднання із сервером втрачено. Виконується повторне підключення..."
+            }
+          })
         );
       },
 
       onerror: (error) => {
-        console.error(
-          "WebSocket error:",
-          error
-        );
+        console.error("Помилка WebSocket:", error);
 
         this.dispatchEvent(
           new CustomEvent("connectionError", {
-            detail: { error },
+            detail: {
+              error,
+              message: "Не вдалося підключитися до сервера. Перевірте з'єднання."
+            }
           })
         );
-      },
+      }
     });
-
-    this.currentRoomId = null;
-    this.currentRoom = null;
   }
 
   setPlayerName(name: string): void {
-    this.playerName =
-      name.trim().slice(0, 20);
+    this.playerName = name.trim().slice(0, 20);
   }
 
   async refresh(): Promise<Room[] | undefined> {
@@ -127,58 +104,45 @@ export class Lobby extends EventTarget {
       this.controller.abort();
     }
 
-    this.controller =
-      new AbortController();
-
-    const controller =
-      this.controller;
+    this.controller = new AbortController();
+    const controller = this.controller;
 
     try {
-      const response =
-        await fetch("/api/rooms", {
-          signal: controller.signal,
-        });
+      const response = await fetch("/api/rooms", {
+        signal: controller.signal
+      });
 
       if (!response.ok) {
-        throw new Error(
-          `HTTP ${response.status}`
-        );
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      const data: unknown =
-        await response.json();
+      const data: unknown = await response.json();
+      const rooms = getRooms(data);
 
-      const rooms =
-        getRooms(data);
-
-      this.rooms =
-        rooms;
+      this.rooms = rooms;
 
       this.dispatchEvent(
         new CustomEvent("roomsUpdated", {
           detail: {
-            rooms: this.rooms,
-          },
+            rooms: this.rooms
+          }
         })
       );
 
       return this.rooms;
     } catch (error: unknown) {
-      if (
-        error instanceof DOMException &&
-        error.name === "AbortError"
-      ) {
+      if (error instanceof DOMException && error.name === "AbortError") {
         return;
       }
 
-      console.error(
-        "Не вдалося завантажити кімнати:",
-        error
-      );
+      console.error("Не вдалося завантажити кімнати:", error);
 
       this.dispatchEvent(
         new CustomEvent("roomsError", {
-          detail: { error },
+          detail: {
+            error,
+            message: "Не вдалося завантажити список кімнат. Спробуйте ще раз."
+          }
         })
       );
     }
@@ -186,23 +150,18 @@ export class Lobby extends EventTarget {
 
   startAutoRefresh(interval = 5000): void {
     this.stopAutoRefresh();
-
     this.refresh();
 
-    this.refreshTimer =
-      setInterval(() => {
-        this.refresh();
-      }, interval);
+    this.refreshTimer = setInterval(() => {
+      this.refresh();
+    }, interval);
 
     this.connection.connect();
   }
 
   stopAutoRefresh(): void {
     if (this.refreshTimer) {
-      clearInterval(
-        this.refreshTimer
-      );
-
+      clearInterval(this.refreshTimer);
       this.refreshTimer = null;
     }
 
@@ -213,37 +172,25 @@ export class Lobby extends EventTarget {
   }
 
   join(roomId: string): void {
-    const room =
-      this.rooms.find(
-        (item) => item.id === roomId
-      );
+    const room = this.rooms.find((item) => item.id === roomId);
 
     if (!room) {
-      throw new Error(
-        `Кімнату ${roomId} не знайдено`
-      );
+      throw new Error(`Кімнату ${roomId} не знайдено`);
     }
 
     if (!this.playerName) {
-      throw new Error(
-        "Player name is required"
-      );
+      throw new Error("Не вказано ім'я гравця");
     }
 
-    this.currentRoomId =
-      room.id;
-
-    this.currentRoom =
-      room;
+    this.currentRoomId = room.id;
+    this.currentRoom = room;
 
     this.stopAutoRefresh();
-
     this.connection.connect();
 
     if (
       this.connection.socket &&
-      this.connection.socket.readyState ===
-        WebSocket.OPEN
+      this.connection.socket.readyState === WebSocket.OPEN
     ) {
       this.sendJoin();
     }
@@ -254,19 +201,23 @@ export class Lobby extends EventTarget {
       return;
     }
 
+    if (!this.playerName) {
+      console.error("Неможливо увійти: не вказано ім'я гравця.");
+      return;
+    }
+
     this.connection.send({
       version: PROTOCOL_VERSION,
       type: "join",
       roomId: this.currentRoomId,
-      name:
-        this.playerName || "Guest",
+      name: this.playerName
     });
   }
 
   leave(): void {
     this.connection.send({
       version: PROTOCOL_VERSION,
-      type: "leave",
+      type: "leave"
     });
 
     this.currentRoomId = null;
@@ -274,8 +225,7 @@ export class Lobby extends EventTarget {
   }
 
   sendChat(text: string): void {
-    const value =
-      text.trim();
+    const value = text.trim();
 
     if (!value) {
       return;
@@ -284,13 +234,11 @@ export class Lobby extends EventTarget {
     this.connection.send({
       version: PROTOCOL_VERSION,
       type: "chat",
-      text: value,
+      text: value
     });
   }
 
-  handleMessage(
-    message: Message
-  ): void {
+  handleMessage(message: Message): void {
     switch (message.type) {
       case "roster":
         this.handleRoster(message);
@@ -299,7 +247,7 @@ export class Lobby extends EventTarget {
       case "chat":
         this.dispatchEvent(
           new CustomEvent("chat", {
-            detail: message,
+            detail: message
           })
         );
         break;
@@ -307,7 +255,7 @@ export class Lobby extends EventTarget {
       case "pong":
         this.dispatchEvent(
           new CustomEvent("pong", {
-            detail: message,
+            detail: message
           })
         );
         break;
@@ -315,69 +263,52 @@ export class Lobby extends EventTarget {
       case "snapshot":
         this.dispatchEvent(
           new CustomEvent("snapshot", {
-            detail: message,
+            detail: message
           })
         );
         break;
 
       case "error":
-        console.error(
-          "Server error:",
-          message.error
-        );
+        console.error("Помилка сервера:", message.error);
 
         this.dispatchEvent(
           new CustomEvent("serverError", {
-            detail: message,
+            detail: {
+              ...message,
+              displayMessage: "Сервер повідомив про помилку: " + message.error
+            }
           })
         );
         break;
 
       default:
-        console.warn(
-          "Unknown server message:",
-          message
-        );
+        console.warn("Невідоме повідомлення сервера:", message);
     }
   }
 
   handleRoster(
-    message: Extract<
-      Message,
-      { type: "roster" }
-    >
+    message: Extract<Message, { type: "roster" }>
   ): void {
-    const roomId =
-      typeof message.roomId === "string"
-        ? message.roomId
-        : null;
+    const roomId = typeof message.roomId === "string" ? message.roomId : null;
 
-    if (
-      this.currentRoomId &&
-      roomId !== this.currentRoomId
-    ) {
+    if (this.currentRoomId && roomId !== this.currentRoomId) {
       return;
     }
 
     this.dispatchEvent(
       new CustomEvent("roster", {
-        detail: message,
+        detail: message
       })
     );
 
-    if (
-      this.currentRoomId &&
-      roomId === this.currentRoomId
-    ) {
+    if (this.currentRoomId && roomId === this.currentRoomId) {
       this.dispatchEvent(
         new CustomEvent("joined", {
           detail: {
             room: this.currentRoom,
-            playerName:
-              this.playerName,
-            players:
-              message.players,
-          },
+            playerName: this.playerName,
+            players: message.players
+          }
         })
       );
     }
@@ -388,3 +319,4 @@ export class Lobby extends EventTarget {
     this.connection.close();
   }
 }
+

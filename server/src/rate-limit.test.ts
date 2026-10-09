@@ -1,9 +1,9 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from "vitest";
 
-import { TokenBucket } from './rate-limit.js';
+import { TokenBucket } from "./rate-limit.js";
 
-describe('TokenBucket', () => {
-  test('allows requests while tokens are available', () => {
+describe("TokenBucket", () => {
+  test("allows requests while tokens are available", () => {
     const bucket = new TokenBucket(3, 1);
 
     expect(bucket.check()).toBe(true);
@@ -12,7 +12,7 @@ describe('TokenBucket', () => {
     expect(bucket.check()).toBe(false);
   });
 
-  test('refills tokens over time', () => {
+  test("refills tokens over time", () => {
     vi.useFakeTimers();
 
     try {
@@ -31,7 +31,7 @@ describe('TokenBucket', () => {
     }
   });
 
-  test('does not exceed capacity', () => {
+  test("does not exceed capacity", () => {
     vi.useFakeTimers();
 
     try {
@@ -47,7 +47,7 @@ describe('TokenBucket', () => {
     }
   });
 
-  test('refills fractional tokens correctly', () => {
+  test("refills fractional tokens correctly", () => {
     vi.useFakeTimers();
 
     try {
@@ -65,3 +65,4 @@ describe('TokenBucket', () => {
     }
   });
 });
+

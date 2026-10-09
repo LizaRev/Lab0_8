@@ -1,0 +1,28 @@
+{
+  "name": "dogfight",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace client",
+    "dev:client": "npm run dev --workspace client",
+    "dev:server": "npm run dev --workspace server",
+    "build": "npm run build --workspace client",
+    "start": "npm run start --workspace server",
+    "test": "npm run test --workspace server",
+    "typecheck": "npm run typecheck --workspace client && npm run typecheck --workspace server"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "chartjs-node-canvas": "^5.0.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/ws": "^8.18.2",
+    "typescript": "^7.0.2"
+  },
+  "type": "module"
+}

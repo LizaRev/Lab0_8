@@ -137,6 +137,33 @@ export class Match {
       asteroid2
     );
 
+    // Два дополнительных астероида только в Beta.
+    if (this.roomId === "beta") {
+      const asteroid3 = new Asteroid(
+        150,
+        400,
+        70,
+        -90,
+        30
+      );
+
+      this.world.spawn(
+        asteroid3
+      );
+
+      const asteroid4 = new Asteroid(
+        650,
+        150,
+        -90,
+        70,
+        30
+      );
+
+      this.world.spawn(
+        asteroid4
+      );
+    }
+
     const pickup = new Pickup(
       600,
       300,
@@ -147,6 +174,8 @@ export class Match {
       pickup
     );
   }
+
+
 
   addClient(
     playerId: PlayerId,

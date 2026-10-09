@@ -1,6 +1,6 @@
-import { Entity } from './entity.js';
+import { Entity } from "./entity.js";
 
-export type PickupType = 'shield';
+export type PickupType = "shield";
 
 export class Pickup extends Entity {
   type: PickupType;
@@ -8,18 +8,9 @@ export class Pickup extends Entity {
   constructor(
     x: number,
     y: number,
-    type: PickupType = 'shield'
+    type: PickupType = "shield"
   ) {
-    super(
-      x,
-      y,
-      0,
-      0,
-      0,
-      15,
-      'pickup'
-    );
-
+    super(x, y, 0, 0, 0, 15, "pickup");
     this.type = type;
   }
 
@@ -27,3 +18,4 @@ export class Pickup extends Entity {
     // Pickup does not move.
   }
 }
+

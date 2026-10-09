@@ -1,6 +1,6 @@
-import { Entity } from './entity.js';
-import { Vector2 } from './vector.js';
-import { Bullet } from './bullet.js';
+import { Entity } from "./entity.js";
+import { Vector2 } from "./vector.js";  
+import { Bullet } from "./bullet.js";
 
 type AsteroidInput = {
   width: number;
@@ -19,25 +19,14 @@ export class Asteroid extends Entity {
     vy: number,
     radius: number = 30
   ) {
-    super(
-      x,
-      y,
-      vx,
-      vy,
-      0,
-      radius,
-      'asteroid'
-    );
+    super(x, y, vx, vy, 0, radius, "asteroid");
 
     this.hp = 3;
     this.homing = null;
     this.shootTimer = 3;
   }
 
-  update(
-    dt: number,
-    inputs: AsteroidInput
-  ): void {
+  update(dt: number, inputs: AsteroidInput): void {
     super.update(dt);
 
     const width = inputs.width;
@@ -67,7 +56,6 @@ export class Asteroid extends Entity {
 
     if (this.shootTimer <= 0) {
       this.shootAtShip();
-
       this.shootTimer = 3;
     }
   }
@@ -79,7 +67,7 @@ export class Asteroid extends Entity {
 
     let target: Entity | undefined;
 
-    for (const ship of this.world.ofKind('ship')) {
+    for (const ship of this.world.ofKind("ship")) {
       target = ship;
       break;
     }
@@ -88,46 +76,22 @@ export class Asteroid extends Entity {
       return;
     }
 
-    const dx =
-      target.pos.x -
-      this.pos.x;
-
-    const dy =
-      target.pos.y -
-      this.pos.y;
-
-    const length =
-      Math.hypot(dx, dy);
+    const dx = target.pos.x - this.pos.x;
+    const dy = target.pos.y - this.pos.y;
+    const length = Math.hypot(dx, dy);
 
     if (length === 0) {
       return;
     }
 
-    const directionX =
-      dx / length;
-
-    const directionY =
-      dy / length;
-
+    const directionX = dx / length;
+    const directionY = dy / length;
     const bulletSpeed = 500;
 
-    const bulletX =
-      this.pos.x +
-      directionX *
-      (this.radius + 5);
-
-    const bulletY =
-      this.pos.y +
-      directionY *
-      (this.radius + 5);
-
-    const bulletVx =
-      directionX *
-      bulletSpeed;
-
-    const bulletVy =
-      directionY *
-      bulletSpeed;
+    const bulletX = this.pos.x + directionX * (this.radius + 5);
+    const bulletY = this.pos.y + directionY * (this.radius + 5);
+    const bulletVx = directionX * bulletSpeed;
+    const bulletVy = directionY * bulletSpeed;
 
     const bullet = new Bullet(
       bulletX,
@@ -148,3 +112,4 @@ export class Asteroid extends Entity {
     }
   }
 }
+

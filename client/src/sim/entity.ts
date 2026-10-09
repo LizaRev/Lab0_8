@@ -1,5 +1,5 @@
-import { Vector2 } from './vector.js';
-import type { World } from './world.js';
+import { Vector2 } from "./vector.js";
+import type { World } from "./world.js";
 
 export class Entity {
   static #nextId = 1;
@@ -20,13 +20,11 @@ export class Entity {
     vy = 0,
     angle = 0,
     radius = 10,
-    kind = 'entity'
+    kind = "entity"
   ) {
     this.id = Entity.#nextId++;
-
     this.pos = new Vector2(x, y);
     this.vel = new Vector2(vx, vy);
-
     this.angle = angle;
     this.radius = radius;
     this.alive = true;
@@ -34,12 +32,8 @@ export class Entity {
     this.world = null;
   }
 
-  update(
-    dt: number,
-    _inputs?: unknown
-  ): void {
-    this.pos = this.pos.add(
-      this.vel.scale(dt)
-    );
+  update(dt: number, _inputs?: unknown): void {
+    this.pos = this.pos.add(this.vel.scale(dt));
   }
 }
+

@@ -1,0 +1,17 @@
+л{
+  "name": "dogfight-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "start": "tsx src/index.ts",
+    "test": "tsx --test ../shared/sim/determinism.test.ts src/protocol.test.ts src/binary.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

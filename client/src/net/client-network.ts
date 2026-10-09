@@ -55,120 +55,63 @@ function isSnapshotMessageWithWorld(
 
 export class ClientNetwork {
   connection: Connection;
-
   netgraph: NetGraph;
-
   latency: LatencyInjector;
-
   snapshotClient: SnapshotClient;
-
   inputSender: InputSender;
 
-  constructor(
-    connection: Connection
-  ) {
-    this.connection =
-      connection;
+  constructor(connection: Connection) {
+    this.connection = connection;
+    this.netgraph = new NetGraph();
+    this.latency = new LatencyInjector({ latency: 0 });
+    this.snapshotClient = new SnapshotClient(this.netgraph);
 
-    this.netgraph =
-      new NetGraph();
-
-    this.latency =
-      new LatencyInjector({
-        latency: 0,
-      });
-
-    this.snapshotClient =
-      new SnapshotClient(
-        this.netgraph
-      );
-
-    this.inputSender =
-      new InputSender(
-        (message) => {
-          this.send(
-            message
-          );
-        },
-
-        this.netgraph
-      );
-  }
-
-  send(
-    message: InputMessage
-  ): void {
-    this.latency.send(
-      () => {
-        this.connection.send(
-          message
-        );
-      }
+    this.inputSender = new InputSender(
+      (message) => {
+        this.send(message);
+      },
+      this.netgraph
     );
   }
 
-  sendInput(
-    input: InputState
-  ): number {
-    return this.inputSender.send(
-      input
-    );
+  send(message: InputMessage): void {
+    this.latency.send(() => {
+      this.connection.send(message);
+    });
   }
 
-  handleMessage(
-    message: Message
-  ): void {
-    if (
-      !isSnapshotMessageWithWorld(
-        message
-      )
-    ) {
+  sendInput(input: InputState): number {
+    return this.inputSender.send(input);
+  }
+
+  handleMessage(message: Message): void {
+    if (!isSnapshotMessageWithWorld(message)) {
       return;
     }
 
-    this.latency.send(
-      () => {
-        this.snapshotClient.receive(
-          message
-        );
-      }
-    );
+    this.latency.send(() => {
+      this.snapshotClient.receive(message);
+    });
   }
 
-  onSnapshot(
-    callback: SnapshotCallback
-  ): () => void {
-    return this.snapshotClient.onSnapshot(
-      callback
-    );
+  onSnapshot(callback: SnapshotCallback): () => void {
+    return this.snapshotClient.onSnapshot(callback);
   }
 
-  setLatency(
-    ms: number
-  ): void {
-    this.latency.setLatency(
-      ms
-    );
+  setLatency(ms: number): void {
+    this.latency.setLatency(ms);
   }
 
-  setJitter(
-    ms: number
-  ): void {
-    this.latency.setJitter(
-      ms
-    );
+  setJitter(ms: number): void {
+    this.latency.setJitter(ms);
   }
 
-  setPacketLoss(
-    percent: number
-  ): void {
-    this.latency.setPacketLoss(
-      percent
-    );
+  setPacketLoss(percent: number): void {
+    this.latency.setPacketLoss(percent);
   }
 
   getInterpolationDelay(): number {
-    return this.netgraph
-      .getInterpolationDelay();
+    return this.netgraph.getInterpolationDelay();
   }
 }
+

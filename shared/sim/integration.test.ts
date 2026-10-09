@@ -1,16 +1,10 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from "vitest";
 
-import { Entity } from './entity.js';
+import { Entity } from "./entity.js";
 
-describe('integration', () => {
-  test('moves an entity using velocity and delta time', () => {
-    const entity =
-      new Entity(
-        10,
-        20,
-        5,
-        -4
-      );
+describe("integration", () => {
+  test("moves an entity using velocity and delta time", () => {
+    const entity = new Entity(10, 20, 5, -4);
 
     entity.update(2);
 
@@ -18,14 +12,8 @@ describe('integration', () => {
     expect(entity.pos.y).toBe(12);
   });
 
-  test('does not move an entity with zero velocity', () => {
-    const entity =
-      new Entity(
-        10,
-        20,
-        0,
-        0
-      );
+  test("does not move an entity with zero velocity", () => {
+    const entity = new Entity(10, 20, 0, 0);
 
     entity.update(5);
 
@@ -33,14 +21,8 @@ describe('integration', () => {
     expect(entity.pos.y).toBe(20);
   });
 
-  test('uses a fractional delta time correctly', () => {
-    const entity =
-      new Entity(
-        100,
-        50,
-        20,
-        -10
-      );
+  test("uses a fractional delta time correctly", () => {
+    const entity = new Entity(100, 50, 20, -10);
 
     entity.update(0.25);
 
@@ -48,14 +30,8 @@ describe('integration', () => {
     expect(entity.pos.y).toBe(47.5);
   });
 
-  test('stores the previous position before integration', () => {
-    const entity =
-      new Entity(
-        10,
-        20,
-        4,
-        6
-      );
+  test("stores the previous position before integration", () => {
+    const entity = new Entity(10, 20, 4, 6);
 
     entity.update(1);
 
@@ -65,3 +41,4 @@ describe('integration', () => {
     expect(entity.pos.y).toBe(26);
   });
 });
+

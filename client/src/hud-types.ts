@@ -1,8 +1,9 @@
 export type Player =
-  string | {
-    name?: string;
-    [key: string]: unknown;
-  };
+  | string
+  | {
+      name?: string;
+      [key: string]: unknown;
+    };
 
 export type Ship = {
   hp?: number;
@@ -26,7 +27,6 @@ export type LobbyLike = {
     listener: EventListenerOrEventListenerObject
   ): void;
 
-  sendChat?(
-    text: string
-  ): void;
+  sendChat?(text: string): void;
 };
+

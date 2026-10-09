@@ -459,10 +459,10 @@ async function startGame(): Promise<void> {
 
 
   const manifestUrl =
-    new URL(
-      "./assets/manifest.json",
-      import.meta.url
-    ).href;
+  new URL(
+    "/assets/manifest.json",
+    window.location.href
+  ).href;
 
 
   console.log(

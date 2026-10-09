@@ -1,17 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { Bullet } from './bullet.js';
-import { Ship } from './ship.js';
+import { describe, expect, it } from "vitest";
 
-describe('Bullet coverage', () => {
-  it('moves and decreases ttl', () => {
+import { Bullet } from "./bullet.js";
+import { Ship } from "./ship.js";
+
+describe("Bullet coverage", () => {
+  it("moves and decreases ttl", () => {
     const ship = new Ship(100, 100);
-    const bullet = new Bullet(
-      0,
-      0,
-      100,
-      50,
-      ship
-    );
+    const bullet = new Bullet(0, 0, 100, 50, ship);
 
     bullet.update(0.5);
 
@@ -21,13 +16,8 @@ describe('Bullet coverage', () => {
     expect(bullet.alive).toBe(true);
   });
 
-  it('dies when ttl reaches zero', () => {
-    const bullet = new Bullet(
-      0,
-      0,
-      100,
-      50
-    );
+  it("dies when ttl reaches zero", () => {
+    const bullet = new Bullet(0, 0, 100, 50);
 
     bullet.update(2);
 
@@ -35,13 +25,8 @@ describe('Bullet coverage', () => {
     expect(bullet.alive).toBe(false);
   });
 
-  it('dies when ttl becomes negative', () => {
-    const bullet = new Bullet(
-      0,
-      0,
-      100,
-      50
-    );
+  it("dies when ttl becomes negative", () => {
+    const bullet = new Bullet(0, 0, 100, 50);
 
     bullet.update(3);
 
@@ -49,3 +34,4 @@ describe('Bullet coverage', () => {
     expect(bullet.alive).toBe(false);
   });
 });
+

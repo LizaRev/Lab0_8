@@ -10,6 +10,7 @@
     "load-test": "tsx src/load-test.ts"
   },
   "dependencies": {
+    "prom-client": "^15.1.3",
     "ws": "^8.18.3"
   },
   "devDependencies": {

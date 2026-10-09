@@ -8,10 +8,7 @@ export const MAX_ROOMS = 50;
 type Player = {
   id: string;
   name: string;
-  send: (
-    message: unknown,
-    isCritical?: boolean
-  ) => void;
+  send: (message: unknown, isCritical?: boolean) => void;
 };
 
 type RoomEvents = {
@@ -52,120 +49,77 @@ export class Room extends EventEmitter<RoomEvents> {
   players: Map<string, Player>;
   match: Match;
 
-  constructor(
-    id: string,
-    name: string = id
-  ) {
+  constructor(id: string, name: string = id) {
     super();
 
     this.id = id;
     this.name = name;
+    this.players = new Map<string, Player>();
+    this.match = new Match(id);
 
-    this.players =
-      new Map<string, Player>();
-
-    this.match =
-      new Match(id);
+    // M4: автоматично додаємо 8 ботів лише в Beta.
+    if (id === "beta") {
+      this.match.addBots(8);
+    }
 
     setupRoomLogging(this);
   }
 
-  addPlayer(
-    player: Player
-  ): void {
-    if (
-      this.players.size >=
-      MAX_PLAYERS_PER_ROOM
-    ) {
-      throw new Error(
-        "Room is full"
-      );
+  addPlayer(player: Player): void {
+    if (this.players.size >= MAX_PLAYERS_PER_ROOM) {
+      throw new Error("Room is full");
     }
 
-    this.players.set(
-      player.id,
-      player
-    );
+    this.players.set(player.id, player);
 
-    // M1: реєструємо клієнта в Match
-    this.match.addClient(
-      player.id,
-      player
-    );
+    // M1: реєструємо клієнта в Match.
+    this.match.addClient(player.id, player);
 
-    if (
-      this.players.size === 1
-    ) {
+    if (this.players.size === 1) {
       this.match.start();
     }
 
-    this.emit(
-      "log-event",
-      {
-        type: "join",
-        playerId: player.id,
-        name: player.name,
-      }
-    );
+    this.emit("log-event", {
+      type: "join",
+      playerId: player.id,
+      name: player.name,
+    });
 
-    this.emit(
-      "join",
-      {
-        roomId: this.id,
-        player,
-      }
-    );
+    this.emit("join", {
+      roomId: this.id,
+      player,
+    });
   }
 
-  removePlayer(
-    playerId: string
-  ): Player | null {
-    const player =
-      this.players.get(
-        playerId
-      );
+  removePlayer(playerId: string): Player | null {
+    const player = this.players.get(playerId);
 
     if (!player) {
       return null;
     }
 
-    this.players.delete(
-      playerId
-    );
+    this.players.delete(playerId);
 
-    // M1: видаляємо клієнта з Match
-    this.match.removeClient(
-      playerId
-    );
+    // M1: видаляємо клієнта з Match.
+    this.match.removeClient(playerId);
 
-    this.emit(
-      "log-event",
-      {
-        type: "leave",
-        playerId: player.id,
-        name: player.name,
-      }
-    );
+    this.emit("log-event", {
+      type: "leave",
+      playerId: player.id,
+      name: player.name,
+    });
 
-    this.emit(
-      "leave",
-      {
-        roomId: this.id,
-        player,
-      }
-    );
+    this.emit("leave", {
+      roomId: this.id,
+      player,
+    });
 
-    if (
-      this.players.size === 0
-    ) {
+    if (this.players.size === 0) {
       this.match.stop();
 
-      this.emit(
-        "empty",
-        {
-          roomId: this.id,
-        }
-      );
+      this.emit("empty", {
+        roomId: this.id,
+      });
     }
 
     return player;
@@ -176,35 +130,18 @@ export class Room extends EventEmitter<RoomEvents> {
     exceptId: string | null = null,
     isCritical: boolean = true
   ): void {
-    for (
-      const player of
-      this.players.values()
-    ) {
-      if (
-        player.id ===
-        exceptId
-      ) {
+    for (const player of this.players.values()) {
+      if (player.id === exceptId) {
         continue;
       }
 
-      player.send(
-        message,
-        isCritical
-      );
+      player.send(message, isCritical);
     }
   }
 
-  roster(): Array<{
-    id: string;
-    name: string;
-  }> {
-    return [
-      ...this.players.values(),
-    ].map(
-      ({
-        id,
-        name,
-      }) => ({
+  roster(): Array<{ id: string; name: string }> {
+    return [...this.players.values()].map(
+      ({ id, name }) => ({
         id,
         name,
       })
@@ -216,67 +153,33 @@ export class RoomManager {
   rooms: Map<string, Room>;
 
   constructor() {
-    this.rooms =
-      new Map<string, Room>();
+    this.rooms = new Map<string, Room>();
   }
 
-  create(
-    id: string,
-    name: string = id
-  ): Room {
-    if (
-      this.rooms.size >=
-      MAX_ROOMS
-    ) {
-      throw new Error(
-        "Server room limit reached"
-      );
+  create(id: string, name: string = id): Room {
+    if (this.rooms.size >= MAX_ROOMS) {
+      throw new Error("Server room limit reached");
     }
 
-    if (
-      this.rooms.has(id)
-    ) {
-      throw new Error(
-        `Room already exists: ${id}`
-      );
+    if (this.rooms.has(id)) {
+      throw new Error(`Room already exists: ${id}`);
     }
 
-    const room =
-      new Room(
-        id,
-        name
-      );
+    const room = new Room(id, name);
 
-    room.on(
-      "empty",
-      ({
-        roomId,
-      }) => {
-        if (
-          roomId !== "alpha" &&
-          roomId !== "beta"
-        ) {
-          this.rooms.delete(
-            roomId
-          );
-        }
+    room.on("empty", ({ roomId }) => {
+      if (roomId !== "alpha" && roomId !== "beta") {
+        this.rooms.delete(roomId);
       }
-    );
+    });
 
-    this.rooms.set(
-      id,
-      room
-    );
+    this.rooms.set(id, room);
 
     return room;
   }
 
-  get(
-    id: string
-  ): Room | undefined {
-    return this.rooms.get(
-      id
-    );
+  get(id: string): Room | undefined {
+    return this.rooms.get(id);
   }
 
   list(): Array<{
@@ -284,25 +187,15 @@ export class RoomManager {
     name: string;
     players: number;
   }> {
-    return [
-      ...this.rooms.values(),
-    ].map(
-      (room) => ({
-        id: room.id,
-        name: room.name,
-        players:
-          room.players.size,
-      })
-    );
+    return [...this.rooms.values()].map((room) => ({
+      id: room.id,
+      name: room.name,
+      players: room.players.size,
+    }));
   }
 
-  getOrCreate(
-    id: string,
-    name: string = id
-  ): Room {
-    return (
-      this.get(id) ||
-      this.create(id, name)
-    );
+  getOrCreate(id: string, name: string = id): Room {
+    return this.get(id) || this.create(id, name);
   }
 }
+

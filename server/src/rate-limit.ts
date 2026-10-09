@@ -12,17 +12,13 @@ export class TokenBucket {
 
   check(): boolean {
     const now = Date.now();
-
-    const elapsed =
-      (now - this.lastRefill) / 1000;
+    const elapsed = (now - this.lastRefill) / 1000;
 
     this.lastRefill = now;
 
     this.tokens = Math.min(
       this.capacity,
-      this.tokens +
-        elapsed *
-        this.refillRate
+      this.tokens + elapsed * this.refillRate
     );
 
     if (this.tokens < 1) {
@@ -34,3 +30,4 @@ export class TokenBucket {
     return true;
   }
 }
+

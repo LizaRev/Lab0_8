@@ -1,0 +1,46 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { World } from './world.js';
+
+test('World is deterministic with the same seed', () => {
+  const worldA = new World(12345);
+  const worldB = new World(12345);
+
+  worldA.width = 800;
+  worldA.height = 500;
+
+  worldB.width = 800;
+  worldB.height = 500;
+
+  const asteroidA1 = worldA.createAsteroid();
+  const asteroidA2 = worldA.createAsteroid();
+
+  const asteroidB1 = worldB.createAsteroid();
+  const asteroidB2 = worldB.createAsteroid();
+
+  assert.deepEqual(
+    {
+      x: asteroidA1.pos.x,
+      y: asteroidA1.pos.y,
+      vx: asteroidA1.vel.x,
+      vy: asteroidA1.vel.y,
+      radius: asteroidA1.radius,
+    },
+    {
+      x: asteroidB1.pos.x,
+      y: asteroidB1.pos.y,
+      vx: asteroidB1.vel.x,
+      vy: asteroidB1.vel.y,
+      radius: asteroidB1.radius,
+    }
+  );
+
+  assert.deepEqual(
+    {
+      x: asteroidA2.pos.x,
+      y: asteroidA2.pos.y,
+      vx: asteroidA2.vel.x,
+      vy: asteroidA2.vel.y,
+      radius: asteroidA2.radius,
+    

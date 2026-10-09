@@ -1,66 +1,44 @@
-import { Vector2 } from './vector.js';
-import type { Entity } from './entity.js';
+import { Entity } from "./entity.js";
+import { Vector2 } from "./vector.js";
 
-type HomingBehavior = {
-  target: Entity | null;
+export class ExplosionParticle extends Entity {
+  ttl: number;
 
-  update(
-    entity: Entity,
-    dt: number
-  ): void;
-};
+  constructor(x: number, y: number, vx: number, vy: number) {
+    super(x, y, vx, vy, 0, 3, "explosion");
+    this.ttl = 0.5;
+  }
 
-export function createHomingBehavior(
-  target: Entity | null
-): HomingBehavior {
-  return {
-    target,
+  update(dt: number): void {
+    super.update(dt);
+    this.ttl -= dt;
 
-    update(
-      entity: Entity,
-      dt: number
-    ): void {
-      if (
-        !this.target ||
-        !this.target.alive
-      ) {
-        return;
-      }
-
-      const direction =
-        new Vector2(
-          this.target.pos.x -
-            entity.pos.x,
-          this.target.pos.y -
-            entity.pos.y
-        ).normalize();
-
-      const strength = 100;
-
-      const newVelocity =
-        new Vector2(
-          entity.vel.x +
-            direction.x *
-            strength *
-            dt,
-
-          entity.vel.y +
-            direction.y *
-            strength *
-            dt
-        );
-
-      entity.vel = newVelocity;
+    if (this.ttl <= 0) {
+      this.alive = false;
     }
-  };
+  }
 }
 
-export function attachHoming(
-  entity: Entity & {
-    homing?: HomingBehavior | null;
-  },
-  target: Entity | null
+export function createExplosion(
+  world: { spawn(entity: Entity): void },
+  x: number,
+  y: number
 ): void {
-  entity.homing =
-    createHomingBehavior(target);
+  const particleCount = 20;
+
+  for (let i = 0; i < particleCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 50 + Math.random() * 150;
+    const direction = Vector2.fromAngle(angle);
+
+    const particle = new ExplosionParticle(
+      x,
+      y,
+      direction.x * speed,
+      direction.y * speed
+    );
+
+    world.spawn(particle);
+  }
 }
+

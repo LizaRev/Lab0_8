@@ -1,0 +1,76 @@
+export type AssetManifestItem = {
+  name: string;
+  type: "image" | "audio" | "json";
+  url: string;
+};
+
+export type AssetManifest = {
+  sprites?: AssetManifestItem[];
+  sounds?: AssetManifestItem[];
+  data?: AssetManifestItem[];
+};
+
+export type LoadedAssets = Record<
+  string,
+  HTMLImageElement | AudioBuffer
+>;
+
+export function fetchJson(
+  url: string,
+  options?: {
+    signal?: AbortSignal;
+  }
+): Promise<unknown>;
+
+export function loadImage(
+  url: string,
+  options?: {
+    signal?: AbortSignal;
+  }
+): Promise<HTMLImageElement>;
+
+export function loadAudio(
+  ctx: AudioContext,
+  url: string,
+  options?: {
+    signal?: AbortSignal;
+  }
+): Promise<AudioBuffer>;
+
+export function loadJson<T>(
+  url: string,
+  options?: {
+    signal?: AbortSignal;
+  }
+): Promise<T>;
+
+export function withRetry<T>(
+  fn: (signal?: AbortSignal) => Promise<T>,
+  options?: {
+    attempts?: number;
+    baseMs?: number;
+    signal?: AbortSignal;
+  }
+): Promise<T>;
+
+export function loadAll(
+  manifest: AssetManifest,
+  options: {
+    onProgress?: (progress: number) => void;
+    signal?: AbortSignal;
+    audioContext?: AudioContext;
+    baseUrl: string;
+  }
+): Promise<LoadedAssets>;export type AssetManifestItem = {
+  name: string;
+  type: "image" | "audio" | "json";
+  url: string;
+};
+
+export type AssetManifest = {
+  sprites?: AssetManifestItem[];
+  sounds?: AssetManifestItem[];
+  data?: AssetManifestItem[];
+};
+
+export type LoadedAssets = Record<

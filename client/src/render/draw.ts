@@ -1,18 +1,14 @@
 type RenderEntity = {
   id?: string | number;
   kind: string;
-
   x?: number;
   y?: number;
-
   pos?: {
     x: number;
     y: number;
   };
-
   vx?: number;
   vy?: number;
-
   angle?: number;
   radius?: number;
   hp?: number;
@@ -24,7 +20,6 @@ type RenderEntity = {
 };
 
 type RenderShip = RenderEntity | null;
-
 type RenderWorld = Iterable<RenderEntity>;
 
 type DrawAssets = {
@@ -43,62 +38,35 @@ export function drawScene(
   assets: DrawAssets
 ): void {
   ctx.clearRect(0, 0, width, height);
-
-  ctx.fillStyle = '#050816';
+  ctx.fillStyle = "#050816";
   ctx.fillRect(0, 0, width, height);
 
   drawStars(ctx, width, height);
   drawGrid(ctx, width, height);
 
   for (const entity of world) {
-    if (
-      entity.kind === 'ship' &&
-      entity.id !== ship?.id
-    ) {
-      drawShip(
-        ctx,
-        entity,
-        assets.ship
-      );
+    if (entity.kind === "ship" && entity.id !== ship?.id) {
+      drawShip(ctx, entity, assets.ship);
     }
 
-    if (entity.kind === 'asteroid') {
-      drawAsteroid(
-        ctx,
-        entity,
-        assets.asteroid
-      );
+    if (entity.kind === "asteroid") {
+      drawAsteroid(ctx, entity, assets.asteroid);
     }
 
-    if (entity.kind === 'bullet') {
-      drawBullet(
-        ctx,
-        entity,
-        assets.bullet
-      );
+    if (entity.kind === "bullet") {
+      drawBullet(ctx, entity, assets.bullet);
     }
 
-    if (entity.kind === 'explosion') {
-      drawExplosionParticle(
-        ctx,
-        entity
-      );
+    if (entity.kind === "explosion") {
+      drawExplosionParticle(ctx, entity);
     }
 
-    if (entity.kind === 'pickup') {
-      drawPickup(
-        ctx,
-        entity,
-        assets.shield
-      );
+    if (entity.kind === "pickup") {
+      drawPickup(ctx, entity, assets.shield);
     }
   }
 
-  drawShip(
-    ctx,
-    ship,
-    assets.ship
-  );
+  drawShip(ctx, ship, assets.ship);
 }
 
 function drawStars(
@@ -106,7 +74,7 @@ function drawStars(
   width: number,
   height: number
 ): void {
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = "white";
 
   for (let x = 30; x < width; x += 100) {
     for (let y = 30; y < height; y += 100) {
@@ -122,24 +90,20 @@ function drawGrid(
 ): void {
   const size = 50;
 
-  ctx.strokeStyle = '#172033';
+  ctx.strokeStyle = "#172033";
   ctx.lineWidth = 1;
 
   for (let x = 0; x <= width; x += size) {
     ctx.beginPath();
-
     ctx.moveTo(x, 0);
     ctx.lineTo(x, height);
-
     ctx.stroke();
   }
 
   for (let y = 0; y <= height; y += size) {
     ctx.beginPath();
-
     ctx.moveTo(0, y);
     ctx.lineTo(width, y);
-
     ctx.stroke();
   }
 }
@@ -153,38 +117,21 @@ function drawShip(
     return;
   }
 
-  const x =
-    ship.x ??
-    ship.pos?.x;
+  const x = ship.x ?? ship.pos?.x;
+  const y = ship.y ?? ship.pos?.y;
 
-  const y =
-    ship.y ??
-    ship.pos?.y;
-
-  if (
-    x === undefined ||
-    y === undefined
-  ) {
+  if (x === undefined || y === undefined) {
     return;
   }
 
   ctx.save();
-
-  ctx.translate(
-    x,
-    y
-  );
-
-  ctx.rotate(
-    ship.angle ?? 0
-  );
+  ctx.translate(x, y);
+  ctx.rotate(ship.angle ?? 0);
 
   const sourceX = 0;
   const sourceY = 0;
-
   const sourceWidth = image.width;
   const sourceHeight = image.height;
-
   const drawWidth = 90;
   const drawHeight = 90;
 
@@ -212,12 +159,9 @@ function drawBullet(
     return;
   }
 
-  const size =
-    (bullet.radius ?? 0) * 2;
-
+  const size = (bullet.radius ?? 0) * 2;
   const sourceX = 0;
   const sourceY = 0;
-
   const sourceWidth = image.width;
   const sourceHeight = image.height;
 
@@ -243,17 +187,11 @@ function drawAsteroid(
     return;
   }
 
-  const size =
-    (asteroid.radius ?? 0) * 2.5;
-
+  const size = (asteroid.radius ?? 0) * 2.5;
   const sourceX = 0;
   const sourceY = 0;
-
-  const sourceWidth =
-    image.width;
-
-  const sourceHeight =
-    image.height;
+  const sourceWidth = image.width;
+  const sourceHeight = image.height;
 
   ctx.drawImage(
     image,
@@ -276,14 +214,10 @@ function drawExplosionParticle(
     return;
   }
 
-  const alpha =
-    (particle.ttl ?? 0) / 0.5;
-
-  ctx.globalAlpha =
-    alpha;
+  const alpha = (particle.ttl ?? 0) / 0.5;
+  ctx.globalAlpha = alpha;
 
   ctx.beginPath();
-
   ctx.arc(
     particle.pos.x,
     particle.pos.y,
@@ -292,13 +226,9 @@ function drawExplosionParticle(
     Math.PI * 2
   );
 
-  ctx.fillStyle =
-    'orange';
-
+  ctx.fillStyle = "orange";
   ctx.fill();
-
-  ctx.globalAlpha =
-    1;
+  ctx.globalAlpha = 1;
 }
 
 function drawPickup(
@@ -310,17 +240,11 @@ function drawPickup(
     return;
   }
 
-  const size =
-    (pickup.radius ?? 0) * 5;
-
+  const size = (pickup.radius ?? 0) * 5;
   const sourceX = 0;
   const sourceY = 0;
-
-  const sourceWidth =
-    image.width;
-
-  const sourceHeight =
-    image.height;
+  const sourceWidth = image.width;
+  const sourceHeight = image.height;
 
   ctx.drawImage(
     image,
@@ -334,3 +258,4 @@ function drawPickup(
     size
   );
 }
+
