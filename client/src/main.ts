@@ -1,5 +1,9 @@
 import { createLoop } from './loop.js';
-import { createInput } from './input.js';
+
+import {
+  createInput,
+  createMobileControls,
+} from './input.js';
 
 import { World } from './sim/world.js';
 
@@ -533,6 +537,8 @@ async function startGame(): Promise<void> {
     createInput(
       window
     );
+
+    createMobileControls(input);
 
 
   const world =
