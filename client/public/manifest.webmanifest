@@ -1,0 +1,17 @@
+{
+  "name": "Dogfight",
+  "short_name": "Dogfight",
+  "description": "Multiplayer space battle game",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050816",
+  "theme_color": "#050816",
+  "icons": [
+    {
+      "src": "/icongame.jpg",
+      "sizes": "819x819",
+      "type": "image/jpeg"
+    }
+  ]
+}
