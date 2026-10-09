@@ -9,6 +9,10 @@
 Гру можна завантажити на телефон:
 
 
+<img width="800" height="393" alt="play2" src="https://github.com/user-attachments/assets/c49c16dc-09db-47be-8229-dc16da51b4e3" />
+
+
+
 Гра двох гравців на ПК:
 
 <img width="800" height="410" alt="play" src="https://github.com/user-attachments/assets/f82188ea-2915-4f85-b6a7-147032b1824b" />
