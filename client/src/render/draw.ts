@@ -37,6 +37,57 @@ export function drawScene(
   world: RenderWorld,
   assets: DrawAssets
 ): void {
+  const mobile = window.matchMedia("(pointer: coarse)").matches;
+
+  if (mobile) {
+    const sizedWorld = world as RenderWorld & {
+      width?: number;
+      height?: number;
+    };
+
+    const worldWidth = sizedWorld.width ?? 800;
+    const worldHeight = sizedWorld.height ?? 500;
+    const scale = Math.min(width / worldWidth, height / worldHeight);
+    const offsetX = (width - worldWidth * scale) / 2;
+    const offsetY = (height - worldHeight * scale) / 2;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#050816";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = "#050816";
+    ctx.fillRect(0, 0, worldWidth, worldHeight);
+
+    drawStars(ctx, worldWidth, worldHeight);
+    drawGrid(ctx, worldWidth, worldHeight);
+
+    for (const entity of world) {
+      if (entity.kind === "ship" && entity.id !== ship?.id) {
+        drawShip(ctx, entity, assets.ship);
+      }
+      if (entity.kind === "asteroid") {
+        drawAsteroid(ctx, entity, assets.asteroid);
+      }
+      if (entity.kind === "bullet") {
+        drawBullet(ctx, entity, assets.bullet);
+      }
+      if (entity.kind === "explosion") {
+        drawExplosionParticle(ctx, entity);
+      }
+      if (entity.kind === "pickup") {
+        drawPickup(ctx, entity, assets.shield);
+      }
+    }
+
+    drawShip(ctx, ship, assets.ship);
+    ctx.restore();
+    return;
+  }
+
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "#050816";
   ctx.fillRect(0, 0, width, height);
@@ -48,19 +99,15 @@ export function drawScene(
     if (entity.kind === "ship" && entity.id !== ship?.id) {
       drawShip(ctx, entity, assets.ship);
     }
-
     if (entity.kind === "asteroid") {
       drawAsteroid(ctx, entity, assets.asteroid);
     }
-
     if (entity.kind === "bullet") {
       drawBullet(ctx, entity, assets.bullet);
     }
-
     if (entity.kind === "explosion") {
       drawExplosionParticle(ctx, entity);
     }
-
     if (entity.kind === "pickup") {
       drawPickup(ctx, entity, assets.shield);
     }

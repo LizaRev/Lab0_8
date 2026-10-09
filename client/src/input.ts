@@ -98,10 +98,10 @@ export function createMobileControls(input: GameInput): void {
 
   style(joystick, {
     position: "absolute",
-    left: "24px",
-    bottom: "calc(24px + env(safe-area-inset-bottom))",
-    width: "124px",
-    height: "124px",
+    left: "max(16px, env(safe-area-inset-left))",
+    bottom: "calc(20px + env(safe-area-inset-bottom))",
+    width: "clamp(100px, 16vw, 124px)",
+    height: "clamp(100px, 16vw, 124px)",
     borderRadius: "50%",
     background: "rgba(50, 75, 120, 0.55)",
     border: "2px solid rgba(180, 205, 255, 0.8)",
@@ -137,15 +137,15 @@ export function createMobileControls(input: GameInput): void {
 
   style(fire, {
     position: "absolute",
-    right: "28px",
-    bottom: "calc(38px + env(safe-area-inset-bottom))",
-    width: "88px",
-    height: "88px",
+    right: "max(18px, env(safe-area-inset-right))",
+    bottom: "calc(28px + env(safe-area-inset-bottom))",
+    width: "clamp(72px, 12vw, 88px)",
+    height: "clamp(72px, 12vw, 88px)",
     borderRadius: "50%",
     background: "rgba(190, 40, 65, 0.9)",
     color: "white",
     border: "3px solid white",
-    fontSize: "18px",
+    fontSize: "clamp(15px, 3vw, 18px)",
     fontWeight: "bold",
     pointerEvents: "auto",
     touchAction: "none",
@@ -164,7 +164,7 @@ export function createMobileControls(input: GameInput): void {
     const dx = event.clientX - centerX;
     const dy = event.clientY - centerY;
 
-    const maxDistance = 34;
+    const maxDistance = rect.width * 0.28;
     const distance = Math.hypot(dx, dy);
     const scale =
       distance > maxDistance ? maxDistance / distance : 1;
@@ -176,9 +176,9 @@ export function createMobileControls(input: GameInput): void {
       `${50 + (dy * scale / rect.height) * 100}%`;
 
     input.setTouchState({
-      left: dx < -14,
-      right: dx > 14,
-      thrust: dy < -14,
+      left: dx < -rect.width * 0.12,
+      right: dx > rect.width * 0.12,
+      thrust: dy < -rect.height * 0.12,
     });
   }
 
