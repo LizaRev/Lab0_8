@@ -10,6 +10,11 @@
 
 <img width="800" height="393" alt="gameplay" src="https://github.com/user-attachments/assets/893f7341-c3f1-464a-8649-73e0904f8472" />
 
+Гра двох гравців на ПК:
+
+<img width="800" height="410" alt="play" src="https://github.com/user-attachments/assets/f82188ea-2915-4f85-b6a7-147032b1824b" />
+
+
 
 ## Основні можливості
 
